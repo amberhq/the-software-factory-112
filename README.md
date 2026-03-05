@@ -232,6 +232,32 @@ There's something hidden in the [live terminal](https://factory.locus.sh/). Engi
 
 ---
 
+---
+
+## `$ locus list-roles --open --all-teams`
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│   🔍  FIND YOUR TRIBE                                            │
+│                                                                  │
+│   This role not the right fit?                                   │
+│   We're hiring across Engineering, Product, Data, and more.      │
+│                                                                  │
+│   ⮕  https://locus.freshteam.com/jobs                            │
+│                                                                  │
+│   Every role at Locus comes with the same philosophy:            │
+│   high ownership, high density, high impact.                     │
+│                                                                  │
+│   The moat is the team. Come raise the density.                  │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### **[See all open roles →](https://locus.freshteam.com/jobs)**
+
+---
+
 <p align="center">
   <i>"We don't hire the best people and tell them what to build.<br>We hire builders and get out of their way."</i><br>
   <b>— Locus Engineering</b>

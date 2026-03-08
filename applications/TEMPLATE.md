@@ -12,14 +12,15 @@
 
 ## Resume
 
-<!-- Add your resume PDF to this PR:
-     1. Name it: applications/resumes/your-github-username.pdf
-     2. Drag and drop it into the PR, OR
-     3. Add it to the applications/resumes/ folder in your fork
+<!-- Share your resume via any of these methods:
+     1. Google Drive / Dropbox link (easiest)
+     2. Drag and drop PDF into the PR
+     3. Add PDF to applications/resumes/your-github-username.pdf in your fork
 
-     A LinkedIn profile link also works if you prefer. -->
+     A LinkedIn profile link also works. -->
 
-**Resume:** [attached in this PR] OR [LinkedIn profile link]
+**Resume:** [Google Drive / Dropbox link] OR [attached in this PR]
+**LinkedIn:** [your profile URL]
 
 ## One thing you'd change about this repo
 

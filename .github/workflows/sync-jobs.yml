@@ -1,0 +1,166 @@
+name: Sync Jobs from Freshteam
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
+  workflow_dispatch:       # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and update jobs
+        run: |
+          # Scrape Freshteam public careers page and extract job data
+          curl -s 'https://locus.freshteam.com/jobs' -o /tmp/freshteam.html
+
+          # Extract job data using Node.js
+          node << 'SCRIPT'
+          const fs = require('fs');
+          const html = fs.readFileSync('/tmp/freshteam.html', 'utf8');
+
+          // Freshteam embeds job data in a script tag or renders it in HTML
+          // Extract job links and titles from the HTML
+          const jobPattern = /<a[^>]*href="\/jobs\/([^"]+)"[^>]*>[\s\S]*?<span[^>]*class="[^"]*job-title[^"]*"[^>]*>([^<]+)<\/span>/gi;
+          const deptPattern = /<span[^>]*class="[^"]*department[^"]*"[^>]*>([^<]+)<\/span>/gi;
+          const locPattern = /<span[^>]*class="[^"]*location[^"]*"[^>]*>([^<]+)<\/span>/gi;
+
+          // Alternative: parse the structured data that Freshteam typically includes
+          // Look for JSON-LD or embedded JS objects
+          let jsonMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*({[\s\S]*?});/);
+          if (!jsonMatch) {
+            jsonMatch = html.match(/job_postings['"]\s*:\s*(\[[\s\S]*?\])/);
+          }
+
+          // Fallback: parse all job card elements
+          // Freshteam uses a consistent HTML structure
+          const jobs = [];
+          const cardRegex = /href="\/jobs\/([^"]+)"[\s\S]*?<[^>]+>([^<]+(?:Engineer|Developer|Manager|Designer|Lead|Director|Specialist|Partner|Consultant|Principal|Staff)[^<]*)<\/[^>]+>/gi;
+          let match;
+
+          // Simple approach: find all job links
+          const linkRegex = /href="(\/jobs\/[^"]+)"[^>]*>/g;
+          const titleRegex = /<h\d[^>]*class="[^"]*(?:title|heading)[^"]*"[^>]*>([^<]+)<\/h\d>/gi;
+
+          // Most reliable: extract from the li/div job cards
+          // Freshteam renders: <a href="/jobs/ID/slug"> with job details inside
+          const allLinks = [];
+          const linkPattern = /href="(\/jobs\/([^"]+?))"[\s\S]*?/g;
+          while ((match = linkPattern.exec(html)) !== null) {
+            if (match[1] && !allLinks.some(l => l.path === match[1])) {
+              allLinks.push({ path: match[1], slug: match[2] });
+            }
+          }
+
+          // Write raw HTML for debugging if needed
+          if (allLinks.length === 0) {
+            console.log('WARNING: Could not parse any jobs from Freshteam HTML.');
+            console.log('HTML length:', html.length);
+            console.log('First 2000 chars:', html.substring(0, 2000));
+            process.exit(0); // Don't fail, just skip update
+          }
+
+          // Build jobs array from extracted links
+          const result = allLinks.map(link => {
+            // Convert slug to title: "senior-product-designer" -> "Senior Product Designer"
+            const parts = link.slug.split('/');
+            const slug = parts[parts.length - 1];
+            const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            return {
+              title: title,
+              url: 'https://locus.freshteam.com' + link.path
+            };
+          });
+
+          console.log('Found ' + result.length + ' jobs');
+          fs.writeFileSync('/tmp/freshteam_jobs.json', JSON.stringify(result, null, 2));
+          SCRIPT
+
+          # Check if we got jobs
+          if [ ! -f /tmp/freshteam_jobs.json ]; then
+            echo "No jobs file generated, skipping update"
+            exit 0
+          fi
+
+          JOB_COUNT=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/freshteam_jobs.json','utf8')).length)")
+          echo "Extracted $JOB_COUNT jobs from Freshteam"
+
+          if [ "$JOB_COUNT" -lt 5 ]; then
+            echo "Too few jobs ($JOB_COUNT), likely a parsing error. Skipping update."
+            exit 0
+          fi
+
+          # Generate the jobs JS array for both index.html and jobs.html
+          node << 'UPDATE'
+          const fs = require('fs');
+          const freshJobs = JSON.parse(fs.readFileSync('/tmp/freshteam_jobs.json', 'utf8'));
+
+          // Read current index.html to get existing dept/loc data
+          const indexHtml = fs.readFileSync('index.html', 'utf8');
+          const existingJobsMatch = indexHtml.match(/var jobs = \[([\s\S]*?)\];/);
+
+          // Parse existing jobs to preserve dept and location data
+          const deptMap = {};
+          if (existingJobsMatch) {
+            const entryRegex = /title:\s*'([^']+)'.*?dept:\s*'([^']+)'.*?loc:\s*'([^']+)'/g;
+            let m;
+            while ((m = entryRegex.exec(existingJobsMatch[1])) !== null) {
+              deptMap[m[1].toLowerCase()] = { dept: m[2], loc: m[3] };
+            }
+          }
+
+          // Merge: use existing dept/loc if available, otherwise mark as 'Unknown'
+          const mergedJobs = freshJobs.map(j => {
+            const existing = deptMap[j.title.toLowerCase()];
+            return {
+              title: j.title,
+              dept: existing ? existing.dept : 'Unknown',
+              loc: existing ? existing.loc : 'Bengaluru',
+              url: j.url
+            };
+          });
+
+          // Generate JS array string
+          const jsArray = mergedJobs.map(j =>
+            `  { title: '${j.title.replace(/'/g, "\\'")}', dept: '${j.dept}', loc: '${j.loc}', url: '${j.url}' }`
+          ).join(',\n');
+
+          const newJobsBlock = `var jobs = [\n${jsArray}\n];`;
+
+          // Update index.html
+          let updatedIndex = indexHtml.replace(/var jobs = \[[\s\S]*?\];/, newJobsBlock);
+          fs.writeFileSync('index.html', updatedIndex);
+
+          // Update jobs.html
+          const jobsHtml = fs.readFileSync('jobs.html', 'utf8');
+          let updatedJobs = jobsHtml.replace(/var jobs = \[[\s\S]*?\];/, newJobsBlock);
+          fs.writeFileSync('jobs.html', updatedJobs);
+
+          console.log('Updated both files with ' + mergedJobs.length + ' jobs');
+
+          // Log any new roles that need dept/loc classification
+          const unknown = mergedJobs.filter(j => j.dept === 'Unknown');
+          if (unknown.length > 0) {
+            console.log('\nNew roles needing classification:');
+            unknown.forEach(j => console.log('  - ' + j.title));
+          }
+          UPDATE
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html jobs.html
+          git commit -m "chore: sync jobs from Freshteam [automated]"
+          git push

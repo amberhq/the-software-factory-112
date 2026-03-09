@@ -576,7 +576,7 @@ blank();
 divider();
 var ownershipLine = document.createElement('div');
 ownershipLine.className = 'line';
-ownershipLine.id = 'ownershipComplete';
+ownershipLine.id = 'vc8';
 ownershipLine.innerHTML = '<span class="b">  8/8 checks passed.</span> <span class="g">Ownership: COMPLETE</span>';
 ownershipLine.style.cursor = 'default';
 output.appendChild(ownershipLine);
@@ -991,12 +991,10 @@ if (terminalBody) {
   });
 }
 
-// ════════════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════════════
 var _0x=[],_0i=0,_0b='',_0t=0,_0r=null,_0f=false;
 function _d(s,k){var r='';for(var i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return r;}
 var _k='factoryLocus';
-_0x=[38,38,40,40,37,39,37,39,66,65];
+_0x=[7,7,9,9,6,8,6,8,35,34].map(function(v){return v+31;});
 document.addEventListener('keydown', function(e) {
   if (e.target.classList && e.target.classList.contains('terminal-input')) return;
   if (e.keyCode === _0x[_0i]) {
@@ -1011,7 +1009,7 @@ document.addEventListener('keydown', function(e) {
     _0b = ''; _0g();
   }
 });
-var _0el = document.getElementById('ownershipComplete');
+var _0el = document.getElementById('vc8');
 if (_0el) {
   _0el.addEventListener('click', function() {
     _0t++;
@@ -1036,12 +1034,12 @@ function _0g() {
   divider();
   prompt(_d('\x48\x14\x0d\x18\x00\x11\x12\x61\x1c\x06\x16\x01\x03\x15\x43\x59\x42\x13\x1a\x2f\x0a\x10\x06\x5e\x01\x13\x02\x1a\x1b\x17\x1d',_k));
   blank();
-  line('<span class="g">  ACCESS GRANTED</span>');
+  line('<span class="g">  '+_d('\x27\x22\x20\x31\x3c\x21\x59\x0b\x3d\x22\x3b\x27\x23\x25',_k)+'</span>');
   blank();
   line('<span class="g">  ┌──────────────────────────────────────────────────┐</span>', 'box-line');
   line('<span class="g">  │</span>                                                  <span class="g">│</span>', 'box-line');
-  line('<span class="g">  │</span>  <span class="b">You found it.</span>                                  <span class="g">│</span>', 'box-line');
-  line('<span class="g">  │</span>  <span class="b">Curious. Persistent. Reads source.</span>             <span class="g">│</span>', 'box-line');
+  line('<span class="g">  │</span>  <span class="b">'+_d('\x3f\x0e\x16\x54\x09\x1d\x0c\x22\x0b\x43\x1c\x07\x48',_k)+'</span>                                  <span class="g">│</span>', 'box-line');
+  line('<span class="g">  │</span>  <span class="b">'+_d('\x25\x14\x11\x1d\x00\x07\x0a\x62\x4f\x33\x10\x01\x15\x08\x10\x00\x0a\x1c\x0d\x62\x4f\x31\x10\x12\x02\x12\x43\x07\x00\x07\x0b\x2f\x0a\x4d',_k)+'</span>             <span class="g">│</span>', 'box-line');
   line('<span class="g">  │</span>                                                  <span class="g">│</span>', 'box-line');
   line('<span class="g">  │</span>  <span class="w">That\'s exactly who we hire.</span>                    <span class="g">│</span>', 'box-line');
   line('<span class="g">  │</span>                                                  <span class="g">│</span>', 'box-line');
@@ -1062,8 +1060,8 @@ function _0g() {
   mobileEgg.className = 'box-divider';
   mobileEgg.style.display = 'none';
   mobileEgg.innerHTML = [
-    '<div class="line"><span class="b">  You found it.</span></div>',
-    '<div class="line"><span class="b">  Curious. Persistent. Reads source.</span></div>',
+    '<div class="line"><span class="b">  '+_d('\x3f\x0e\x16\x54\x09\x1d\x0c\x22\x0b\x43\x1c\x07\x48',_k)+'</span></div>',
+    '<div class="line"><span class="b">  '+_d('\x25\x14\x11\x1d\x00\x07\x0a\x62\x4f\x33\x10\x01\x15\x08\x10\x00\x0a\x1c\x0d\x62\x4f\x31\x10\x12\x02\x12\x43\x07\x00\x07\x0b\x2f\x0a\x4d',_k)+'</span></div>',
     '<div class="line"><span class="w">  That\'s exactly who we hire.</span></div>',
     '<div class="line">&nbsp;</div>',
     '<div class="line"><span class="g">  FAST-TRACK — email the builders directly:</span></div>',
